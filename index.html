@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>测测你的本命小众工作</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            moran1: '#F7F4F1',
+            moran2: '#E8E4EF',
+            moran3: '#D8E1E8',
+            moran4: '#EEDFDD',
+            moran5: '#F3EBDB',
+            morantext: '#5A545C',
+            moranaccent: '#B8A8B8'
+          },
+          fontFamily: {
+            sans: ['"Noto Sans SC"', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .card-shadow {
+        box-shadow: 0 6px 18px rgba(184, 168, 184, 0.12);
+      }
+      .option-item {
+        transition: 0.2s ease;
+      }
+      .option-item:active {
+        transform: scale(0.97);
+      }
+    }
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background-color: #F7F4F1;
+      color: #5A545C;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <div class="max-w-md mx-auto px-5 py-8">
+    <!-- 封面页 -->
+    <div id="page-start" class="block">
+      <div class="rounded-3xl p-7 bg-white card-shadow text-center">
+        <p class="text-sm tracking-widest mb-2 text-moranaccent">✨ 趣味心理小测试 ✨</p>
+        <h1 class="text-[24px] font-medium leading-relaxed mb-4">测测你的本命小众工作<br />你最适合做什么样的小众工作？</h1>
+        <p class="text-sm leading-relaxed text-morantext/80 mb-7">
+          不想挤热门内卷赛道？<br />
+          29道轻量选择题 + 一道爱好开放题<br />
+          从性格偏好+你的真实爱好，找到适配你的冷门宝藏职业<br />
+          结果含入门指南&岗位小短板，温柔接地气，可直接截图发小红书
+        </p>
+        <button onclick="startTest()" class="w-full py-3 rounded-full bg-moran2 text-morantext font-medium">
+          开始测试
+        </button>
+        <p class="mt-4 text-xs text-morantext/60">每题凭第一直觉选择哦，支持返回上一题修改</p>
+      </div>
+    </div>
+    <!-- 答题页 -->
+    <div id="page-question" class="hidden">
+      <div class="rounded-3xl p-6 bg-white card-shadow">
+        <div class="flex justify-between items-center mb-5">
+          <span class="text-xs text-moranaccent">题目 <span id="q-index">1</span>/29</span>
+          <div class="h-1 w-24 bg-moran1 rounded-full overflow-hidden">
+            <div id="progress-bar" class="h-full bg-moranaccent w-[4%]"></div>
+          </div>
+        </div>
+        <h2 id="q-title" class="text-lg font-medium mb-6 leading-relaxed"></h2>
+        <div id="option-wrap" class="space-y-3">
+        </div>
+        <div class="mt-6 grid grid-cols-2 gap-3">
+          <button onclick="prevQuestion()" id="btn-prev" class="py-3 rounded-full bg-white border border-moran2 text-morantext font-medium disabled:opacity-40" disabled>
+            上一题
+          </button>
+          <button onclick="nextQuestion()" id="btn-next" class="py-3 rounded-full bg-moran2 text-morantext font-medium disabled:opacity-40" disabled>
+            下一题
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- 爱好开放题页面（新增） -->
+    <div id="page-hobby" class="hidden">
+      <div class="rounded-3xl p-7 bg-white card-shadow">
+        <p class="text-sm text-moranaccent mb-1">🎁 附加题（选填）</p>
+        <h2 class="text-lg font-medium mb-4">你目前有哪些爱好？按熟悉程度排序</h2>
+        <p class="text-sm text-morantext/80 mb-4">多个爱好用中文逗号隔开，例子：徒步，古籍阅读，手工做香，摄影<br>可以留空，跳过这一题</p>
+        <textarea id="hobby-input" class="w-full p-3 rounded-xl bg-moran1 outline-none border-none resize-none" rows="4" placeholder="在这里填写你的爱好..."></textarea>
+        <div class="mt-6 grid grid-cols-2 gap-3">
+          <button onclick="skipHobby()" class="py-3 rounded-full bg-white border border-moran2 text-morantext font-medium">跳过</button>
+          <button onclick="submitHobby()" class="py-3 rounded-full bg-moran2 text-morantext font-medium">提交爱好</button>
+        </div>
+      </div>
+    </div>
+    <!-- 结果页 -->
+    <div id="page-result" class="hidden">
+      <div class="rounded-3xl p-7 bg-white card-shadow">
+        <div class="text-center mb-5">
+          <p class="text-sm text-moranaccent mb-1">你的本命小众工作</p>
+          <h2 id="result-name" class="text-[22px] font-medium"></h2>
+        </div>
+        <div id="result-desc" class="space-y-4 text-sm leading-relaxed"></div>
+        <!-- 爱好推荐区域 -->
+        <div id="hobby-recommend-block" class="mt-6 pt-5 border-t border-moran1 hidden">
+          <p class="text-sm text-moranaccent mb-2">🎁 根据你的爱好额外推荐</p>
+          <div id="hobby-result-text" class="text-sm leading-relaxed"></div>
+        </div>
+        <div class="mt-7">
+          <button onclick="resetTest()" class="w-full py-3 rounded-full bg-moran2 text-morantext font-medium">
+            重新测试
+          </button>
+        </div>
+        <p class="mt-4 text-xs text-center text-morantext/60">本测试为趣味参考，职业选择仍需要结合自身现实条件</p>
+      </div>
+    </div>
+  </div>
+  <script>
+    // 共29题，原第6题替换为5道递进深挖题
+    const questions = [
+      {q:"休息的时候，你更偏向？",o:["一个人安静待着充电","和1-2个熟悉好友小聚","和一群人热闹玩耍","随缘，看当下心情"]},
+      {q:"做事情，你更喜欢？",o:["细致打磨，抠细节，慢工出细活","把控大方向，规划全局","跟着流程按部就班走","即兴发挥，随机应变"]},
+      {q:"环境偏好，你更喜欢？",o:["安静独立的单人空间（工作室/书房）","户外自然环境（山林、田野、海边）","简单的办公室，少量同事","充满烟火、热闹有生机的地方"]},
+      {q:"面对收入，你的想法是？",o:["稳定优先，波动越小越好","可以小幅浮动，底线安稳","能接受阶段性不稳定，上限重要","不执着高薪，自己喜欢最重要"]},
+      {q:"面对陌生冷门知识，你会？",o:["好奇，愿意深挖钻研","觉得有趣，浅尝了解一下","用处不大就不想看","没兴趣，更喜欢实用内容"]},
+      // ========== 新增5道递进深挖题（替换原来的旧第6题） ==========
+      {q:"【偏好对象】长期工作中，你更愿意主要和哪一类事物打交道？",o:["文字、史料、故事、人文思想","实物、材料、器物、手工物件","动植物、野外环境、生态自然","图像、画面、光影、视觉视听内容"]},
+      {q:"【行为倾向】面对你喜欢的这类事物，你最享受做的事是？",o:["解读考证、梳理背后故事","动手改造、打磨、制作出新东西","安静观察、持续记录它本来的样子","剪辑编排、营造氛围与感官体验"]},
+      {q:"【容错心态】如果它存在瑕疵、破损或者不完美，你会倾向？",o:["考据溯源，尝试修复还原","重新加工，改造成更好的版本","原样留存，客观记录不干预","把瑕疵转化成独特的氛围感"]},
+      {q:"【成果载体】最终产出的成果，你更希望是？",o:["图文文稿、档案、文字记录","可以触摸、留存的实体物件","生态观察记录、生物影像台账","音频、短片、氛围感视听作品"]},
+      {q:"【信息接收】接触这类事物时，你更依赖？",o:["阅读文字资料、前人记载","亲手触摸、感受材质质感","现场实地、持续野外观察","耳朵、眼睛沉浸式感受氛围"]},
+      // ============================================================
+      {q:"你更擅长？",o:["捕捉情绪，读懂别人没说出口的感受","挖掘信息，考证溯源找真相","动手实操，把想法变成实物","组织协调，串联人和事"]},
+      {q:"长期重复一样的工作，你会？",o:["可以接受，稳定节奏很安心","适度重复可以，需要定期新挑战","很快觉得枯燥，想要变化","只要内容有意思，重复没关系"]},
+      {q:"别人评价你，更常是？",o:["内敛敏感，心思细腻","想法独特，脑洞很大","靠谱踏实，执行力强","温和善聊，擅长倾听"]},
+      {q:"学习新东西，偏好？",o:["慢慢沉浸式自学","有人一对一引导教学","跟着课程体系系统学","边做边学，实践出真知"]},
+      {q:"如果要产出作品，你偏爱？",o:["不需要很多人看见，自己满意为主","小圈子同好欣赏就足够","希望被更多人认可传播","作品可以解决实际问题"]},
+      {q:"你对风险的接受度？",o:["尽量规避风险，稳妥第一","低风险尝试，不赌全部","愿意承担中等风险试错","喜欢探索未知，不怕试错失败"]},
+      {q:"空闲刷内容，更容易被什么吸引？",o:["古籍、民俗、冷知识、人文故事","植物、地质、生态、自然科普","手工、器物、复古物件、工艺","播客、声音、配乐、氛围感内容"]},
+      {q:"协作模式你更喜欢？",o:["独立完成，少对接沟通","双人搭档，默契配合","小团队，分工清晰","多人团队，频繁沟通碰撞"]},
+      {q:"安排一天，你喜欢？",o:["宽松无计划，自由随心","简单框架，弹性安排","详细清单，按计划执行","紧凑充实，事情排满"]},
+      {q:"面对琐碎繁杂的细节工作？",o:["不排斥，甚至享受整理梳理","必要时可以做，但不想长期做","很容易烦躁，尽量避开","看事情价值，值得就扛下来"]},
+      {q:"工作成果，你想要？",o:["精神满足大于物质回报","有长期沉淀，越老越吃香","看得见实物成果，很有成就感","可以持续迭代，不断出新"]},
+      {q:"遇到突发变化？",o:["容易焦虑，希望尽快回归稳定","冷静，快速调整方案","觉得新鲜，期待变化","有点抗拒，但会配合调整"]},
+      {q:"你更喜欢输出形式？",o:["文字、随笔、记录、叙事","图像、手作、实物创作","声音、旁白、播客、配音","调研笔记、资料整理、档案"]},
+      {q:"关于名气曝光？",o:["完全不爱出镜曝光，低调为主","少量曝光，只在同好圈","适度分享，不排斥走红","希望被看见，积累个人影响力"]},
+      {q:"下面哪件事会让你有成就感？",o:["读懂一段古老文字、还原一段故事","亲手修好/做好一件旧器物","观察记录自然生物、生态变化","安静陪伴、疏导别人的情绪"]},
+      {q:"你讨厌的工作特质？",o:["无休止无效社交应酬","死板规则，没有发挥空间","重复机械，毫无成长","不确定性太强，没有底线"]},
+      {q:"你对冷门小众事物的态度？",o:["痴迷，愿意深耕小众赛道","觉得有意思，当作爱好","知道就好，不会投入太多","更喜欢大众成熟赛道"]},
+      {q:"最后一题：你择业第一优先级？",o:["内心热爱，做起来不内耗","时间自由，掌控自己节奏","稳定保障，生活踏实","成长空间，持续增值"]}
+    ]
+    // 8种结果类型，每个类型内置岗位池子，每次随机抽3条展示
+    const resultPool = [
+      {
+        id:"R0",
+        name:"📜 人文考据叙事型｜故事打捞者",
+        trait:"你偏爱文字、历史、人的故事，擅长在别人忽略的角落打捞温柔的细节，不喜欢喧嚣内卷，适合慢节奏、有沉淀感的赛道。",
+        jobs:[
+          {title:"地方民俗撰稿人",desc:"收集小城老故事、民间传说、老街口述历史，写专栏，不用坐班。入门：走访老街，练习口述记录，从本地小故事发笔记。短板：变现慢，前期收入微薄，需要长期沉淀。"},
+          {title:"古籍/旧书修复助理",desc:"和老书本打交道，修补破损书页，安静治愈。入门：线下古籍修复体验课，图书馆古籍馆招学徒。短板：上手周期很长，岗位极少。"},
+          {title:"方言记录整理员",desc:"记录濒危方言、词汇、童谣，给方言建档。入门：记录家乡方言，投稿方言保护项目。短板：公益属性强，全职稀缺。"},
+          {title:"博物馆小众展区讲解员",desc:"不做通用讲解，深耕民俗、古器物冷门展区。入门：报名博物馆志愿者，吃透一个展区史料。短板：大多兼职，全职名额很少。"},
+          {title:"复古文献排版设计师",desc:"复刻老书版式、民国海报排版，做复古图文。入门：学习排版软件，临摹老刊物版式。短板：客户群体很小，慢慢积累客源。"},
+          {title:"非遗文字记录专员",desc:"帮非遗手艺人整理口述档案、撰写申报材料。入门：练习采访纪实写作，对接本地非遗中心。短板：项目制为主，收入不稳定。"},
+          {title:"田野调研助理（人文方向）",desc:"跟着课题组下乡，收集口述史料、村落民俗记录。入门：高校人文课题组常招短期助理。短板：外勤辛苦，大多项目兼职。"},
+          {title:"老照片整理修复撰稿",desc:"整理家庭、档案馆老照片，配上时代背景文字故事。入门：学习简单照片修复，接单家庭影像整理。短板：客单零散，单价不高。"},
+          {title:"地方志资料摘抄员",desc:"摘抄、校勘地方旧志，给文史机构整理素材。入门：熟悉繁体、竖排文字，对接地方文史馆外包。短板：枯燥，长时间阅读旧文献。"},
+          {title:"独立书评人（冷门文史书籍）",desc:"专注小众文史、旧书书评，给小众平台供稿。入门：持续输出读书随笔，垂直冷门书单。短板：很难稳定变现。"}
+        ]
+      },
+      {
+        id:"R1",
+        name:"🌿 自然观察治愈型｜山野记录者",
+        trait:"比起密闭办公室，你更向往风、植物、山野，从自然里获取能量。适合和大自然相伴，节奏松弛、没有高强度内卷的小众工作。",
+        jobs:[
+          {title:"自然导赏员",desc:"带游客认识植物、昆虫、矿石，山野轻科普。入门：考取导赏证书，跟着本地自然社群带队。短板：周末节假日上班，日晒雨淋，淡季收入低。"},
+          {title:"植物标本制作师",desc:"压制、装帧植物标本，做标本礼盒、科普教具。入门：自学标本压制，小红书出作品接单。短板：季节性强，南方潮湿容易发霉损耗。"},
+          {title:"生态调查助理",desc:"野外记录动植物，填写生态台账。入门：环保机构经常招零基础兼职助理。短板：外勤辛苦，部分野外地点条件简陋。"},
+          {title:"野花原生植物摄影师",desc:"专注野生植物微距拍摄，供稿科普平台。入门：家门口公园、小区开始积累图库。短板：出片慢，图库供稿单价不高。"},
+          {title:"堆肥&原生园艺顾问",desc:"家庭菜园、原生花园、生态堆肥指导。入门：自学朴门园艺，从小单家庭指导做起。短板：受众小众，市场培育慢。"},
+          {title:"观鸟向导",desc:"带队观鸟，讲解鸟类习性，记录鸟种。入门：自学认鸟，加入本地观鸟协会积累经验。短板：依赖天气，旺季集中迁徙季。"},
+          {title:"动物饲养员（保护繁育/小型园舍）",desc:"照料圈养野生动物、农场小动物，日常饲喂、环境清洁、行为记录。入门：动物园、繁育基地学徒岗，接受零基础。短板：体力活，轮班，味道大，节假日无休。"},
+          {title:"异宠照料师",desc:"爬宠、啮齿类等小众宠物寄养、养护指导。入门：先深耕一类异宠，做寄养慢慢起步。短板：受众很小，很多人接受度低。"},
+          {title:"农场农事助教",desc:"自然农场农事体验带队，带城市人群下地劳作、认识作物。入门：近郊农场兼职体验助教。短板：风吹日晒，农忙期很累。"},
+          {title:"昆虫标本整理师",desc:"昆虫标本制作、整姿、科普展陈布置。入门：先学习规范标本制作，遵守生物保护法规。短板：部分人会害怕昆虫。"}
+        ]
+      },
+      {
+        id:"R2",
+        name:"🪵 器物手作匠心型｜质感造物者",
+        trait:"你偏爱看得见、摸得到的实物成果，享受把材料慢慢变成一件器物的过程，讨厌虚无缥缈没有落地感的工作，适合安静造物的赛道。",
+        jobs:[
+          {title:"中古器物淘货整理师",desc:"淘二手瓷器、木器、复古小物，清洁整理、拍照上架售卖。入门：二手平台试水，学习辨别品相、静物拍摄。短板：囤货占资金，品相容易踩坑。"},
+          {title:"木作小匠（小件为主）",desc:"做木勺、木盘、印章、小摆件，工作室接单。入门：体验课入手，先做小件，慢慢添置工具。短板：工具投入高，打磨费时间，产能有限。"},
+          {title:"织物手作修复师",desc:"修补老围巾、古布、刺绣织物，织补破洞。入门：学习基础织补针法，从小件练习。短板：单价高但是订单量偏少。"},
+          {title:"手工香材调配师",desc:"天然香料、线香、香牌调配，非化工香薰。入门：学习香材基础，少量试样，注意合规。短板：原料成本高，天然香门槛高。"},
+          {title:"陶瓷素坯彩绘师",desc:"给素坯手绘图案，和陶艺工作室合作。入门：本地陶艺工作室合作接单，练习釉上彩。短板：烧制有损耗，周期长，回款慢。"},
+          {title:"皮具手作师（小件）",desc:"卡包、钥匙包、笔记本皮套等小件皮具。入门：入门套装便宜，练习打版缝线。短板：费手，缝线耗时，同质化竞争慢慢变多。"},
+          {title:"老物件代估价师",desc:"帮普通人看旧瓷器、老首饰、旧家具大致品相行情，不做鉴定证书。入门：多看藏品图库，积累品类认知。短板：需要持续积累眼力，容易看走眼。"},
+          {title:"旧家具翻新师",desc:"老旧实木家具打磨、补漆、修复改造。入门：从小凳子小茶几练手，注意油漆安全防护。短板：粉尘大，体力消耗高。"},
+          {title:"滴胶/矿石手作创作者",desc:"矿石、贝壳、植物封入滴胶做成摆件首饰。入门：平价材料包练习，市集摆摊。短板：材料毒性需要防护，款式容易撞款。"},
+          {title:"古籍拍照数字化员",desc:"给馆藏古籍、老画册规范拍照、调色、裁切归档。入门：熟悉扫描、静物布光，图书馆外包项目。短板：长时间保持安静，重复拍摄。"}
+        ]
+      },
+      {
+        id:"R3",
+        name:"🎙️ 声音氛围感知型｜声感创作者",
+        trait:"你对声音、氛围、情绪流动很敏感，比起视觉冲击，更容易被声音打动，适合不用大量出镜、靠听觉传递感受的小众方向。",
+        jobs:[
+          {title:"ASMR/环境音录制博主",desc:"录制雨声、柴火、器物摩擦、白噪音音频，售卖音源/做播客。入门：平价录音麦在家录制，平台积累粉丝。短板：竞争慢慢变多，需要稳定更新。"},
+          {title:"人文短内容旁白",desc:"给纪录片小样、图文、非遗短片配温柔旁白，不是网文有声书。入门：手机试音，投递人文工作室试音单。短板：试音竞争大，气息需要长期练习。"},
+          {title:"小众垂类播客制作人",desc:"做民俗、手作、自然、旧物访谈类播客。入门：单人短播客起步，简单剪辑上线。短板：起号很慢，变现周期很长。"},
+          {title:"外景收音助理",desc:"短片、独立纪录片外景收音，收录环境音。入门：跟着独立影视团队做助理学习设备。短板：外勤多，时间跟着拍摄走，作息不固定。"},
+          {title:"声音疗愈引导师",desc:"颂钵、自然音疗引导，团体轻疗愈活动。入门：正规音疗培训考证，从小沙龙开展。短板：市场认知参差不齐，要筛选靠谱培训。"},
+          {title:"小众歌单策划师",desc:"给咖啡馆、独立小店、展览定制氛围感歌单。入门：整理垂类歌单，联系独立小店合作。短板：客单价偏低，需要长期合作。"},
+          {title:"有声绘本录制主播",desc:"安静录制小众人文绘本音频，供给独立书店、早教工作室。入门：练习温柔朗读，投递绘本工作室。短板：单子零散，单价不高。"},
+          {title:"环境音素材库创作者",desc:"专门收集城市、山林、雨天、老房子环境音源，卖给剪辑师。入门：随身录音设备，日常收集声音。短板：单次售价低，靠量大积累。"},
+          {title:"方言配音员",desc:"给地方短片、民俗动画配方言台词。入门：母语方言，录制样音投递本地文创团队。短板：岗位极少，看题材需求。"},
+          {title:"电台深夜栏目撰稿",desc："给小众电台写安静、治愈向文稿。入门：投稿独立网络电台。短板：稿费偏低，需求不稳定。"}
+        ]
+      },
+      {
+        id:"R4",
+        name:"🔍 信息档案溯源型｜冷知识挖掘者",
+        trait:"你享受搜集、考证、梳理信息的过程，喜欢找到别人没留意的线索，理性冷静，不爱情绪化的工作氛围，适合档案、溯源、信息整理类赛道。",
+        jobs:[
+          {title:"资料整理归档专员",desc:"给工作室、独立机构、小众社团整理数字化档案、分类文献。入门：熟练表格、OCR扫描，投递中小机构。短板：重复性内容多，容易枯燥。"},
+          {title:"冷门知识库博主",desc:"整理冷知识、小众行业科普、历史边角料。入门：垂直一个细分方向，持续图文笔记。短板：查阅工作量大，涨粉慢。"},
+          {title:"独立索引编制员",desc:"给小众书籍、论文集、地方志做主题索引。入门：学习索引规范，对接小型出版社。短板：岗位极少，大多项目兼职。"},
+          {title:"旧报刊数字化整理员",desc:"扫描、识别、标注老报纸、旧期刊资料。入门：图书馆、档案馆外包项目招人。短板：长时间对屏幕，内容重复。"},
+          {title:"小众行业数据观察员",desc:"追踪冷门细分行业细碎数据，写简短观察笔记。入门：选定极小赛道，长期记录公开信息。短板：很难快速变现，适合副业起步。"},
+          {title:"小众专著勘校校对",desc:"校对地方志、非遗专著、小众学术小册子。入门：练习校对符号，对接小众出版社外包。短板：单价不高，非常耗眼力。"},
+          {title:"房源资料核验员",desc:"整理房源图纸、产权资料、历史记录，核验信息一致性。入门：细心、擅长比对文字表格，房产工作室外包。短板：很多是纯后台，比较枯燥。"},
+          {title:"文献引文核查助理",desc："核对论文、著作引用文献来源、页码、版本。入门：熟悉知网、古籍数据库，高校课题组兼职。短板：极度细碎，考验耐心。"},
+          {title:"价格信息调研员（冷门品类）",desc："长期跟踪古董、小众原料、中古器物市场行情台账。入门：持续记录公开平台报价。短板：数据繁杂，需要长期坚持。"},
+          {title:"线上知识库维护助理",desc："维护小众科普网站词条、修正错误信息。入门：熟悉检索查证，志愿者转兼职。短板：无偿居多，兼职收入低。"}
+        ]
+      },
+      {
+        id:"R5",
+        name:"🤍 情绪陪伴倾听型｜温柔托举者",
+        trait:"你的天赋是看见别人的情绪，温柔包容，不喜欢激烈竞争。你适合以“陪伴、倾听、托举情绪”为核心的小众工作，但一定要建立清晰边界，保护自己的心力。",
+        jobs:[
+          {title:"线上陪伴倾听师（非心理咨询）",desc:"单纯倾听、陪伴情绪，不做诊断，边界清晰。入门：学习倾听边界规范，入驻正规倾听平台。短板：容易承接大量负面情绪，做好自我保护。"},
+          {title:"长者陪伴记录员",desc:"陪伴老人聊天，记录人生口述故事。入门：对接社区养老、公益组织，先做志愿积累。短板：公益居多，全职岗位不多。"},
+          {title:"小众绘本伴读引导师",desc:"人文绘本线下伴读，不是早教销售。入门：熟悉绘本，和独立书店合作小场活动。短板：大多兼职，要区分销售型早教。"},
+          {title:"宠物临终陪伴师",desc:"安静陪伴、安抚宠物和主人，善后陪同。入门：宠物救助志愿者起步，学习流程。短板：情绪消耗极大，心理承受要求高。"},
+          {title:"手写信情绪撰稿",desc:"帮人写温柔克制的纪念书信，不煽情浮夸。入门：小红书发样稿接单，守住内容边界。短板：订单不稳定，容易遇到沉重题材。"},
+          {title:"安静小店主理人",desc:"独立书屋、安静茶室，主打松弛陪伴氛围。入门：合伙或者市集轻资产起步。短板：房租压力大，客流不稳定。"},
+          {title:"陪诊师（带人看病）",desc:"陪同老人、异地患者挂号、排队、听医嘱、帮忙跑腿。入门：学习医院流程、服务边界，本地接单。短板：医院环境嘈杂，经常跑上跑下，需要抗压。"},
+          {title:"代看房陪看师",desc:"帮异地买家、怕麻烦客户实地看房，拍细节视频、记录房屋优缺点。入门：熟悉片区楼盘，提前约定服务范围。短板：需要跑外勤，遇到客户预期落差容易有矛盾。"},
+          {title:"居家整理陪跑师",desc:"不是单纯收纳，陪客户一起梳理物品、做取舍、慢慢整理家。入门：收纳学习，侧重情绪陪伴整理。短板：客户容易纠结内耗，消耗你的情绪。"},
+          {title:"殡葬礼仪引导助理",desc:"温和引导家属流程，安静陪伴，不强行推销。入门：礼仪公司学徒，心理稳定优先。短板：场景沉重，心理消耗大。"}
+        ]
+      },
+      {
+        id:"R6",
+        name:"📋 稳健流程执行型｜秩序搭建者",
+        trait:"你不喜欢混乱无序，擅长搭建秩序、兜底事务，不一定站在台前，但一个小众团队缺了你会很难运转。适合幕后统筹、流程管理类小众岗位。",
+        jobs:[
+          {title:"独立工作室行政管家",desc:"给手作工作室、独立设计师、小播客团队管日程、合同、台账、排期。入门：熟练办公软件，擅长安排事务。短板：琐事繁杂，容易变成万能救火员。"},
+          {title:"小众项目协调助理",desc:"非遗项目、小型展览、自然活动落地对接。入门：从活动志愿者做起，学习对接流程。短板：活动期忙爆炸，空档清闲。"},
+          {title:"手艺人订单管理员",desc:"接单登记、跟进排期、沟通客户进度、售后对接。入门：订单表格、沟通话术，和手艺人合作。短板：夹在创作者和客户中间，承接负面情绪。"},
+          {title:"独立小众市集统筹",desc:"策划手作、古籍、自然主题市集。入门：市集志愿者起步，学习招商落地。短板：筹备很累，收入受客流影响。"},
+          {title:"版权登记代办助理",desc:"帮手作、图文、音频创作者办理著作权登记材料。入门：熟悉线上申报流程，对接创作者。短板：流程标准化，反复核对资料。"},
+          {title:"小众社团财务台账助理",desc:"非营利兴趣社群简易记账、收支登记。入门：基础excel记账，熟悉收支规范。短板：大多兼职公益，收入有限。"},
+          {title:"看房流程代办助理",desc:"帮客户整理看房清单、预约业主、整理看房对比表、跟进签约材料。入门：熟悉交易基础流程，和中介工作室合作。短板：消息零碎，经常临时沟通。"},
+          {title:"活动物料管家",desc:"小众展览、市集物料清点、打包、现场布设、收尾回收。入门：从志愿物料组做起。短板：体力活，活动当天节奏很紧。"},
+          {title:"自由职业者账单税务助理",desc:"帮独立手艺人、博主整理收支票据、简易台账。入门：熟悉基础票据整理、表格。短板：要细心，涉及财务需要守住合规边界。"},
+          {title:"样品库管理员",desc:"手作、文创工作室样品入库、盘点、借还登记、拍照建档。入门：分类能力强，细心稳定。短板：重复盘点，枯燥。"}
+        ]
+      },
+      {
+        id:"R7",
+        name:"💡 自由创意发散型｜脑洞实验者",
+        trait:"你讨厌一成不变的模板，喜欢持续尝试新想法，不喜欢被固定流程束缚。适合创意向小众赛道，但要做好长期没有稳定现金流的心理准备。",
+        jobs:[
+          {title:"小众主题企划策划",desc:"策划冷门主题展览、脑洞线上企划、小众主题活动。入门：写策划案，线上小型活动试水。短板：创意容易枯竭，很多想法很难落地。"},
+          {title:"安静小众插画师",desc:"画民俗、自然、器物、冷知识插画，不追爆款商插。入门：垂直发作品，对接独立出版物小店。短板：商单不稳定，低价单多，筛选客户。"},
+          {title:"幻想意象短篇创作者",desc:"写氛围感脑洞故事、意象图文、梦境题材内容。入门：图文平台持续更新同风格内容。短板：受众很小，变现难度偏高。"},
+          {title:"小型装置艺术创作者",desc:"氛围感小装置、快闪装饰、市集艺术摆件。入门：市集摆摊，和小店短期合作。短板：材料成本高，一次性装置复购低。"},
+          {title:"冷知识互动教具设计师",desc:"小众科普卡片、互动小册子、趣味教具。入门：自制卡片，对接科普博主。短板：定制化居多，很难批量走量。"},
+          {title:"独立短片创意脚本（冷门题材）",desc:"人文、自然、旧物类短片脚本创作。入门：写样片脚本，投递独立摄制团队。短板：成片周期漫长，很多项目没有预算。"},
+          {title:"小众主题手账企划师",desc:"开发冷门主题贴纸、便签、手账套组，和文创厂合作。入门：先做样稿，文创工作室投稿。短板：打样成本高，市场喜好很难预判。"},
+          {title:"复古场景布置师",desc:"给小型沙龙、独立书店布置复古、自然氛围感场景。入门：市集场景兼职做起，积累案例。短板：单次布置耗时长，拆装麻烦。"},
+          {title:"主题解谜小剧本创作者",desc:"轻量、治愈向小众解谜剧本，不是恐怖密室。入门：先写小型线上解谜企划测试。短板：受众窄，开发周期长。"},
+          {title:"植物拓印文创设计师",desc:"拓印草木纹样，做成帆布袋、卡片、挂画。入门：野外收集落叶拓印，市集测试款式。短板：受季节限制，纹样不稳定。"}
+        ]
+      }
+    ]
+    // ========== 爱好匹配词库 ==========
+    const hobbyMatchLib = [
+      {keys:["徒步","爬山","露营","自然","植物","观鸟"], job:"自然导赏员｜带队山野科普，认识动植物，适合把户外爱好变成轻副业"},
+      {keys:["画画","手绘","插画","素描","水彩"], job:"小众插画创作者｜给独立书籍、手作小店绘制安静风格插图"},
+      {keys:["古籍","历史","古文","民俗","老故事"], job:"民俗/地方文史撰稿人｜挖掘本地老街、民间传说，做纪实内容"},
+      {keys:["手工","木作","陶艺","香","皮具","织物"], job:"手作器物创作者｜制作香牌、木小件、织物修补等，市集接单"},
+      {keys:["摄影","拍照","静物","微距"], job:"自然静物图库摄影师｜拍摄植物、中古器物，供稿科普账号与小店"},
+      {keys:["配音","朗读","播客","录音","白噪音"], job:"人文旁白/环境音录制创作者｜录制短片旁白、氛围感环境音源"},
+      {keys:["读书","写文章","随笔","小说"], job:"纪实文字撰稿人｜写人文随笔、口述故事，给小众公众号供稿"},
+      {keys:["整理","收纳","档案","分类"], job:"独立档案整理专员｜帮工作室数字化归档资料、梳理文献"},
+      {keys:["养宠","宠物"], job:"宠物陪伴记录师｜宠物纪实拍摄、陪伴安抚，侧重情绪向"},
+      {keys:["市集","策划","活动"], job:"小众市集策划助理｜手作、古籍、自然主题市集落地统筹"},
+      {keys:["复古","中古","老物件"], job:"中古器物选品整理师｜淘选、修复、上架复古旧物"},
+      {keys:["音乐","听歌","歌单"], job:"空间歌单策划师｜为书店、茶室、展览定制氛围感歌单"},
+    ]
+    // 计分映射 一共29行，顺序和questions一一对应
+    const map = [
+      [0,1,2,3],
+      [4,5,6,7],
+      [0,1,2,4],
+      [5,6,0,7],
+      [0,4,7,2],
+      // 新增5道深挖题
+      [0,2,1,3],
+      [0,2,1,3],
+      [0,2,1,3],
+      [0,2,1,3],
+      [0,2,1,3],
+      // 后面原题目顺延
+      [5,0,2,6],
+      [6,0,7,2],
+      [5,7,6,0],
+      [0,2,7,4],
+      [0,7,1,6],
+      [6,0,7,4],
+      [0,1,2,3],
+      [0,6,7,5],
+      [7,0,6,4],
+      [0,2,4,6],
+      [0,1,6,7],
+      [6,0,7,5],
+      [0,3,4,7],
+      [0,7,1,6],
+      [0,1,2,5],
+      [5,6,7,0],
+      [0,7,1,2],
+      [0,7,6,5]
+    ]
+    let current = 0;
+    let score = [0,0,0,0,0,0,0,0];
+    let selected = -1;
+    let answerRecord = Array(questions.length).fill(-1);
+    let hobbyRecommendList = [];
+    function startTest(){
+      document.getElementById("page-start").classList.add("hidden");
+      document.getElementById("page-question").classList.remove("hidden");
+      renderQuestion();
+    }
+    function renderQuestion(){
+      const q = questions[current];
+      document.getElementById("q-index").innerText = current+1;
+      document.getElementById("q-title").innerText = q.q;
+      const wrap = document.getElementById("option-wrap");
+      wrap.innerHTML = "";
+      selected = answerRecord[current];
+      document.getElementById("btn-next").disabled = selected === -1;
+      document.getElementById("btn-prev").disabled = current === 0;
+      const per = ((current+1)/questions.length*100).toFixed(0);
+      document.getElementById("progress-bar").style.width = per+"%";
+      q.o.forEach((txt,i)=>{
+        const div = document.createElement("div");
+        div.className = "option-item p-3 rounded-xl bg-moran1 cursor-pointer";
+        if(i === selected){
+          div.classList.add("bg-moran2");
+        }
+        div.innerText = txt;
+        div.onclick = ()=>{
+          document.querySelectorAll(".option-item").forEach(el=>el.classList.remove("bg-moran2"));
+          div.classList.add("bg-moran2");
+          selected = i;
+          answerRecord[current] = i;
+          document.getElementById("btn-next").disabled = false;
+        }
+        wrap.appendChild(div);
+      })
+    }
+    function undoScore(qIndex){
+      const oldSel = answerRecord[qIndex];
+      if(oldSel !== -1){
+        const oldType = map[qIndex][oldSel];
+        score[oldType] -= 1;
+      }
+    }
+    function nextQuestion(){
+      answerRecord[current] = selected;
+      const typeIdx = map[current][selected];
+      score[typeIdx] += 1;
+      current += 1;
+      if(current >= questions.length){
+        // 做完29道单选，跳爱好附加题
+        document.getElementById("page-question").classList.add("hidden");
+        document.getElementById("page-hobby").classList.remove("hidden");
+      }else{
+        renderQuestion();
+      }
+    }
+    function prevQuestion(){
+      undoScore(current);
+      current -= 1;
+      renderQuestion();
+    }
+    // 爱好匹配函数：最多取出前2个匹配结果
+    function matchHobby(text){
+      hobbyRecommendList = [];
+      if(!text.trim()) return;
+      const hobbyArr = text.split(/[,，]/).map(s=>s.trim()).filter(s=>s);
+      for(const hobby of hobbyArr){
+        for(const libItem of hobbyMatchLib){
+          if(libItem.keys.some(k=>hobby.includes(k))){
+            if(!hobbyRecommendList.includes(libItem.job)){
+              hobbyRecommendList.push(libItem.job);
+            }
+          }
+        }
+      }
+      hobbyRecommendList = hobbyRecommendList.slice(0,2);
+    }
+    function submitHobby(){
+      const val = document.getElementById("hobby-input").value;
+      matchHobby(val);
+      showResult();
+    }
+    function skipHobby(){
+      hobbyRecommendList = [];
+      showResult();
+    }
+    // 数组随机洗牌
+    function shuffle(arr){
+      let tmp = [...arr];
+      for(let i=tmp.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [tmp[i],tmp[j]] = [tmp[j],tmp[i]];
+      }
+      return tmp;
+    }
+    function showResult(){
+      document.getElementById("page-hobby").classList.add("hidden");
+      document.getElementById("page-result").classList.remove("hidden");
+      const maxVal = Math.max(...score);
+      const resIdx = score.indexOf(maxVal);
+      const res = resultPool[resIdx];
+      document.getElementById("result-name").innerText = res.name;
+      // 随机抽3个岗位展示
+      const randomJobs = shuffle(res.jobs).slice(0,3);
+      let html = `<p class="mb-3">${res.trait}</p>`;
+      html += `<p class="font-medium text-moranaccent">✅ 适配职业清单</p>`
+      randomJobs.forEach(j=>{
+        html += `
+        <p class="mt-2"><strong>▫️ ${j.title}</strong></p>
+        <p>${j.desc}</p>
+        `
+      })
+      document.getElementById("result-desc").innerHTML = html;
+      // 爱好推荐渲染
+      const block = document.getElementById("hobby-recommend-block");
+      const textDom = document.getElementById("hobby-result-text");
+      if(hobbyRecommendList.length > 0){
+        block.classList.remove("hidden");
+        let hhtml = "";
+        hobbyRecommendList.forEach(item=>{
+          hhtml += "▫️ "+item+"<br /><br />";
+        })
+        textDom.innerHTML = hhtml;
+      }else{
+        block.classList.add("hidden");
+      }
+    }
+    function resetTest(){
+      current = 0;
+      score = [0,0,0,0,0,0,0,0];
+      selected = -1;
+      answerRecord = Array(questions.length).fill(-1);
+      hobbyRecommendList = [];
+      document.getElementById("page-result").classList.add("hidden");
+      document.getElementById("page-hobby").classList.add("hidden");
+      document.getElementById("page-start").classList.remove("hidden");
+    }
+  </script>
+</body>
+</html>
